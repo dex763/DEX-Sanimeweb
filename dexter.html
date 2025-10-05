@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEX'S Anime</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; }
+        .carousel-item { transition: transform 0.5s ease-in-out; }
+        .anime-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .anime-card:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 50; }
+        .modal-content { background: #1e293b; max-width: 600px; margin: 10% auto; padding: 20px; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Header -->
+    <header class="bg-gray-900 p-4 flex justify-between items-center flex-wrap">
+        <div class="text-2xl font-bold text-orange-500">DEX'S Anime</div>
+        <nav class="space-x-4">
+            <a href="#" class="hover:text-orange-500 transition">Home</a>
+            <a href="#" class="hover:text-orange-500 transition">Trending</a>
+            <a href="#" class="hover:text-orange-500 transition">Genres</a>
+            <a href="#" class="hover:text-orange-500 transition">Contact</a>
+        </nav>
+        <div class="flex items-center mt-2 md:mt-0 w-full md:w-auto">
+            <input id="search-input" type="text" placeholder="Search Anime..." class="p-2 rounded-l-md bg-gray-800 border-none focus:outline-none w-full md:w-64">
+            <button id="search-btn" class="p-2 bg-orange-500 rounded-r-md hover:bg-orange-600 transition">Search</button>
+        </div>
+    </header>
+
+    <!-- Hero Section with Carousel -->
+    <section class="relative">
+        <div id="carousel" class="flex overflow-hidden">
+            <div class="carousel-item w-full flex-shrink-0 bg-cover bg-center text-center py-24" style="background-image: url('https://via.placeholder.com/1500x600.png?text=Featured+Anime+1')">
+                <h1 class="text-4xl font-bold">Featured Anime 1</h1>
+                <p class="text-lg mt-2">Discover the latest adventures!</p>
+                <button class="mt-4 p-3 bg-orange-500 rounded-md hover:bg-orange-600">Watch Now</button>
+            </div>
+            <div class="carousel-item w-full flex-shrink-0 bg-cover bg-center text-center py-24" style="background-image: url('https://via.placeholder.com/1500x600.png?text=Featured+Anime+2')">
+                <h1 class="text-4xl font-bold">Featured Anime 2</h1>
+                <p class="text-lg mt-2">Epic battles await!</p>
+                <button class="mt-4 p-3 bg-orange-500 rounded-md hover:bg-orange-600">Watch Now</button>
+            </div>
+        </div>
+        <button id="prev-btn" class="absolute top-1/2 left-4 transform -translate-y-1/2 bg-gray-800 p-2 rounded-full">❮</button>
+        <button id="next-btn" class="absolute top-1/2 right-4 transform -translate-y-1/2 bg-gray-800 p-2 rounded-full">❯</button>
+    </section>
+
+    <!-- Anime Grid -->
+    <section class="anime-grid container mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
+        <!-- Anime cards will be populated by JavaScript -->
+    </section>
+
+    <!-- Modal for Anime Details -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title" class="text-2xl font-bold mb-4"></h2>
+            <img id="modal-image" class="w-full h-64 object-cover rounded-md mb-4" alt="Anime">
+            <p id="modal-description" class="mb-4"></p>
+            <button id="close-modal" class="p-2 bg-orange-500 rounded-md hover:bg-orange-600">Close</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-center p-4 mt-8">
+        &copy; 2025 DEX'S Anime. All rights reserved.
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Mock anime data
+        const animeData = [
+            { id: 1, title: "Anime Title 1", image: "https://via.placeholder.com/300x400.png?text=Anime+1", description: "An epic adventure in a fantasy world." },
+            { id: 2, title: "Anime Title 2", image: "https://via.placeholder.com/300x400.png?text=Anime+2", description: "A thrilling sci-fi saga." },
+            { id: 3, title: "Anime Title 3", image: "https://via.placeholder.com/300x400.png?text=Anime+3", description: "A heartwarming slice-of-life story." },
+            { id: 4, title: "Anime Title 4", image: "https://via.placeholder.com/300x400.png?text=Anime+4", description: "A dark fantasy epic." },
+            { id: 5, title: "Anime Title 5", image: "https://via.placeholder.com/300x400.png?text=Anime+5", description: "A comedic adventure." },
+            { id: 6, title: "Anime Title 6", image: "https://via.placeholder.com/300x400.png?text=Anime+6", description: "A romantic drama." },
+        ];
+
+        // Populate anime grid
+        const animeGrid = document.querySelector('.anime-grid');
+        function displayAnime(data) {
+            animeGrid.innerHTML = '';
+            data.forEach(anime => {
+                const card = document.createElement('div');
+                card.className = 'anime-card bg-gray-800 rounded-lg overflow-hidden cursor-pointer';
+                card.innerHTML = `
+                    <img src="${anime.image}" alt="${anime.title}" class="w-full h-48 object-cover">
+                    <h3 class="p-4 text-center font-semibold">${anime.title}</h3>
+                `;
+                card.addEventListener('click', () => showModal(anime));
+                animeGrid.appendChild(card);
+            });
+        }
+
+        // Search functionality
+        document.getElementById('search-btn').addEventListener('click', () => {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filteredAnime = animeData.filter(anime => anime.title.toLowerCase().includes(query));
+            displayAnime(filteredAnime);
+        });
+
+        // Modal functionality
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalImage = document.getElementById('modal-image');
+        const modalDescription = document.getElementById('modal-description');
+        const closeModal = document.getElementById('close-modal');
+
+        function showModal(anime) {
+            modalTitle.textContent = anime.title;
+            modalImage.src = anime.image;
+            modalDescription.textContent = anime.description;
+            modal.style.display = 'block';
+        }
+
+        closeModal.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        // Carousel functionality
+        let currentSlide = 0;
+        const carousel = document.getElementById('carousel');
+        const items = document.querySelectorAll('.carousel-item');
+        const totalSlides = items.length;
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+        });
+
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+        });
+
+        // Auto-play carousel
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }, 5000);
+
+        // Initial display
+        displayAnime(animeData);
+    </script>
+</body>
+</html>
